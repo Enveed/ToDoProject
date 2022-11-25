@@ -1,4 +1,4 @@
-package com.todoproject.newarchitecture;
+package com.rith13.todoproject.newarchitecture;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -19,9 +19,9 @@ import com.facebook.react.fabric.CoreComponentsRegistry;
 import com.facebook.react.fabric.FabricJSIModuleProvider;
 import com.facebook.react.fabric.ReactNativeConfig;
 import com.facebook.react.uimanager.ViewManagerRegistry;
-import com.todoproject.BuildConfig;
-import com.todoproject.newarchitecture.components.MainComponentsRegistry;
-import com.todoproject.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
+import com.rith13.todoproject.BuildConfig;
+import com.rith13.todoproject.newarchitecture.components.MainComponentsRegistry;
+import com.rith13.todoproject.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
 import java.util.ArrayList;
 import java.util.List;
 
