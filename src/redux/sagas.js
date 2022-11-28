@@ -1,10 +1,10 @@
-import { takeLatest, put, all } from 'redux-saga/effects';
+import { takeLatest, put, all, actionChannel, select } from 'redux-saga/effects';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { ActionSheetIOS } from 'react-native';
+import firestore from '@react-native-firebase/firestore';
 
 function* handleLogin({ payload }) {
     try {
-        yield put({ type: 'login_success' });
+        yield put({ type: 'login_success', payload });
     } catch (err) {
         yield put({ type: 'login_failed', error: err.message });
     }
@@ -21,22 +21,61 @@ function* handleLogout() {
     }
 }
 
-function* handleGetTasks() {
+function* handleGetTasks({ userId }) {
+    console.log(userId);
     try {
-        const tasks = [{ id: 1, title: 'Wash Dishes' },
-        { id: 2, title: 'Do Laundry' },
-        { id: 3, title: 'KMS' }];
-        yield put({ type: 'get_tasks_success', tasks });
+        const res = [];
+        yield firestore()
+            .collection(userId)
+            .get()
+            .then(querySnapshot => {
+                querySnapshot.forEach(documentSnapshot => {
+                    res.push({
+                        title: documentSnapshot.data().title,
+                        id: documentSnapshot.id,
+                    });
+                });
+            });
+        yield put({ type: 'get_tasks_success', userId, tasks: res });
     } catch (err) {
         yield put({ type: 'get_tasks_failed', error: err.message });
     }
 }
 
-function* handleDeleteTask({ id }) {
+function* handleDeleteTask({ payload }) {
     try {
-        yield put({ type: 'delete_task_success', taskToBeDeleted: id });
+        yield put({ type: 'delete_task_success', payload });
     } catch (err) {
         yield put({ type: 'delete_task_failed', error: err.message });
+    }
+}
+
+function* handleAddTask({ payload }) {
+    try {
+        const { operationReducer } = yield select(state => state);
+        const { userId, task } = payload;
+        const docId = yield firestore()
+            .collection(userId)
+            .add({
+                title: task,
+            })
+            .then((docRef) => {
+                return docRef.id;
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+        const modPayload = {
+            task, tasks: [...operationReducer.tasks, {
+                title: task,
+                id: docId,
+            }], userId,
+        }
+        yield put({
+            type: 'add_task_success', modPayload
+        });
+    } catch (err) {
+        yield put({ type: 'add_task_failed', error: err.message });
     }
 }
 
@@ -45,6 +84,7 @@ function* watcherSaga() {
     yield takeLatest('logout_requested', handleLogout);
     yield takeLatest('get_tasks_requested', handleGetTasks);
     yield takeLatest('delete_task_requested', handleDeleteTask);
+    yield takeLatest('add_task_requested', handleAddTask);
 }
 
 export default function* rootSaga() {

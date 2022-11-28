@@ -7,29 +7,31 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 import auth from '@react-native-firebase/auth';
 
 const Login = ({ navigator }) => {
+    GoogleSignin.configure({
+        webClientId:
+            '236694834996-9nevhfh11qifluvi07hivscksj86iepr.apps.googleusercontent.com',
+    });
     const window = useWindowDimensions();
     const dispatch = useDispatch();
     const onPressHandler = () => {
-        const payload = {
-            name: 'Enveed',
-            provider: 'username',
-        };
-        dispatch(loginUser(payload));
+        try {
+            const payload = {
+                name: 'Enveed',
+                userId: 'username',
+            };
+            dispatch(loginUser(payload));
+        } catch (err) {
+            console.log(err);
+        }
     };
     const googleSignin = async () => {
         try {
-            await GoogleSignin.configure({
-                webClientId:
-                    '236694834996-9nevhfh11qifluvi07hivscksj86iepr.apps.googleusercontent.com',
-            });
-
             const userInfo = await GoogleSignin.signIn();
             const googleCredential = auth.GoogleAuthProvider.credential(userInfo.idToken);
             auth().signInWithCredential(googleCredential);
-            console.log(userInfo);
             const payload = {
                 name: userInfo.user.name,
-                provider: 'google',
+                userId: userInfo.user.id,
             };
             dispatch(loginUser(payload));
         } catch (error) {
@@ -64,7 +66,7 @@ const Login = ({ navigator }) => {
                         <Box bg={isPressed ? 'amber.900' : 'emerald.800'} my="10" paddingY="5" paddingX="10" borderWidth="1" borderRadius="15"
                             style={{
                                 transform: [{
-                                    scale: isPressed ? 0.96 : 1
+                                    scale: isPressed ? 0.96 : 1,
                                 }],
                             }}>
                             <Text>Login</Text>
